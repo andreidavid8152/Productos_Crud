@@ -2,15 +2,26 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Models;
 using WebApplication1.Models.Utilies;
+using WebApplication1.Services;
 
 namespace WebApplication1.Controllers
 {
     public class ProductoController : Controller
     {
-        // GET: ProductoController  
-        public ActionResult Index()
+
+        private readonly IApiService _apiService;
+
+        public ProductoController(IApiService apiService)
         {
-            return View(Utils.ListaProductos);
+            _apiService = apiService;
+        }
+
+
+        // GET: ProductoController  
+        public async Task<IActionResult> Index()
+        {
+            var productos = await _apiService.getProductos();
+            return View(productos);
         }
 
         // GET: ProductoController/Details/5

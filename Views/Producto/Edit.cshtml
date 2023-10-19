@@ -8,6 +8,9 @@
 
     <form class="col-sm-4 mx-auto my-auto" method="post">
 
+        <!-- Campo id oculto ya que este no se modifica -->
+        <input type="hidden" asp-for="IdProducto" />
+
         <div class="form-group mb-5 mt-4">
             <label for="exampleInputEmail1">Nombre</label>
             <input asp-for="Nombre" class="form-control mt-2 placeholder-black" placeholder="Ingrese un nombre">
