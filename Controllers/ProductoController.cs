@@ -9,8 +9,10 @@ namespace WebApplication1.Controllers
     public class ProductoController : Controller
     {
 
+        // Dependencia para comunicarse con la API.
         private readonly IApiService _apiService;
 
+        // Constructor que inyecta el servicio de la API.
         public ProductoController(IApiService apiService)
         {
             _apiService = apiService;
@@ -20,14 +22,20 @@ namespace WebApplication1.Controllers
         // GET: ProductoController  
         public async Task<IActionResult> Index()
         {
-            var productos = await _apiService.getProductos();
-            return View(productos);
+            try
+            {
+                var productos = await _apiService.getProductos();
+                return View(productos);
+            } catch (Exception e)
+            {
+                return View(new List<Producto>());
+            }
         }
 
         // GET: ProductoController/Details/5
-        public ActionResult Details(int IdProducto)
+        public async Task<ActionResult> Details(int IdProducto)
         {
-            Producto producto = Utils.ListaProductos.Find(x => x.IdProducto == IdProducto);
+            var producto = await _apiService.getProducto(IdProducto);
             if (producto != null)
             {
                 return View(producto);
@@ -43,19 +51,21 @@ namespace WebApplication1.Controllers
 
         // POST: ProductoController/Create
         [HttpPost]
-        public IActionResult Create(Producto producto)
+        public async Task<IActionResult> Create(Producto producto)
         {
-            int nProductos = Utils.ListaProductos.Count() + 1;
-            producto.IdProducto = nProductos;
-            Utils.ListaProductos.Add(producto);
-            return RedirectToAction(nameof(Index));
+            var result = await _apiService.addProducto(producto);
+            if (result)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            return View(producto);
         }
 
         // GET: ProductoController/Edit/5
-        public IActionResult Edit(int IdProducto)
+        public async Task<IActionResult> Edit(int IdProducto)
         {
-            Producto producto = Utils.ListaProductos.Find(x=>x.IdProducto==IdProducto);
-            if(producto != null)
+            var producto = await _apiService.getProducto(IdProducto);
+            if (producto != null)
             {
                 return View(producto);
             }
@@ -64,31 +74,23 @@ namespace WebApplication1.Controllers
 
         // POST: ProductoController/Edit
         [HttpPost]
-        public IActionResult Edit(Producto producto)
+        public async Task<IActionResult> Edit(Producto producto)
         {
-            Producto productoEncontrado = Utils.ListaProductos.Find(x => x.IdProducto == producto.IdProducto);
-
-            if (productoEncontrado != null)
+            var pAEditar = await _apiService.updateProducto(producto.IdProducto, producto);
+            if (pAEditar != null)
             {
-                productoEncontrado.Nombre = producto.Nombre;
-                productoEncontrado.Descripcion = producto.Descripcion;
-                productoEncontrado.Cantidad = producto.Cantidad;
-                return RedirectToAction("Index");
-            }
-
-            return View();
+                return RedirectToAction(nameof(Index));
+            }   
+            return View(pAEditar);  
         }
 
 
         // GET: ProductoController/Delete/5
         public ActionResult Delete(int IdProducto)
         {
-            Producto productoEncontrado = Utils.ListaProductos.Find(x => x.IdProducto == IdProducto);
-            if (productoEncontrado != null)
-            {
-                Utils.ListaProductos.Remove(productoEncontrado);
-            }
-            return RedirectToAction("Index");
+            var pEliminar = _apiService.deleteProducto(IdProducto);
+            return RedirectToAction(nameof(Index));
+
         }
 
     }
